@@ -21,6 +21,11 @@ def find_post(id):
     for p in my_posts:
         if p["id"] == id:
             return p
+def find_post_index(id):
+    for p in range(len(my_posts)):
+        if my_posts[p]["id"] == id:
+            return p
+    return False
 
 # order matters for path operations, as the program will look for the first match for path, the url
 
@@ -60,6 +65,25 @@ def get_post(id: int, response: Response):
         #return {"message" : f"Post with id {id} was not found"}
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} was not found")
     return {"post_detail" : post}
+
+@app.delete("/posts/{id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+    index = find_post_index(id)
+    if index == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} was not found")
+    my_posts.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@app.put("/posts/{id}", status_code=status.HTTP_202_ACCEPTED)
+def update_post(id: int, post: Post):
+    index = find_post_index(id)
+    if index == None: 
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} was not found")
+    
+    post_dict = post.dict()
+    post_dict["id"] = id
+    my_posts[index] = post_dict
+    return {"data" : post_dict}
 
 
 
